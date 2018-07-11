@@ -1,0 +1,9 @@
+{
+ "engines": {
+     "theiaPlugin": "latest"
+ },
+ "theiaPlugin" : {
+    "frontend": "./validate.spec.ts",
+    "backend": "./validate.spec.ts"    
+ }  
+}

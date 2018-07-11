@@ -1,0 +1,13 @@
+{
+  "name": "assembly-example-test",
+  "engines": {
+    "theiaPlugin": "latest"
+  },
+  "theiaPlugin": {
+    "frontend": "./index.js"
+  },
+  "dependencies": {
+    "yargs": "latest"
+  },
+  "devDependencies": {}
+}
