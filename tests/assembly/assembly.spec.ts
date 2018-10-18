@@ -50,6 +50,9 @@ describe("Test Assembly", () => {
          + ',"children":[],"hint":null,"color":"bold","depth":0}]}}';
         (Exec as any).__setCommandOutput(Yarn.YARN_GET_DEPENDENCIES, execOutput);
 
+        const yarnConfigOutput = '{"type":"log","data":"{}"}';
+        (Exec as any).__setCommandOutput(Yarn.YARN_GET_CONFIG, yarnConfigOutput);
+
         const assembly = new Assembly(assemblyExamplePath, tmpZip);
         await assembly.create();
     });
@@ -59,6 +62,9 @@ describe("Test Assembly", () => {
         const execOutput = '{"type":"tree","data":{"type":"list","trees":[{"name":"unknown@1.1.2","children":[],'
          + '"hint":null,"color":"bold","depth":0}]}}';
         (Exec as any).__setCommandOutput(Yarn.YARN_GET_DEPENDENCIES, execOutput);
+
+        const yarnConfigOutput = '{"type":"log","data":"{}"}';
+        (Exec as any).__setCommandOutput(Yarn.YARN_GET_CONFIG, yarnConfigOutput);
 
         const assembly = new Assembly(assemblyExamplePath, tmpZip);
         let error = null;
