@@ -19,6 +19,8 @@ export class Yarn {
 
     public static readonly YARN_GET_DEPENDENCIES = "yarn list --json --prod";
 
+    public static readonly YARN_GET_CONFIG = "yarn config current --json";
+
     constructor(readonly rootFolder: string) { }
 
     /**
@@ -39,9 +41,26 @@ export class Yarn {
         // parse array into JSON
         const inputTrees = JSON.parse(match[1]);
 
+        // Get node_modules folder
+        const configStdout = await Exec.run(Yarn.YARN_GET_CONFIG);
+
+        const matchConfig = /^{"type":"log","data":"(.*)"}$/gm.exec(configStdout);
+        if (!matchConfig || matchConfig.length !== 2) {
+            throw new Error("Not able to get yarn configuration when executing "
+                + Yarn.YARN_GET_CONFIG + ". Found " + configStdout);
+        }
+
+        // parse array into JSON
+        const unescaped = matchConfig[1].replace(/\\n/g, '').replace(/\\"/g, '"');
+        const jsonConfig = JSON.parse(unescaped);
+        let nodeModulesFolder = jsonConfig.modulesFolder;
+        if (!nodeModulesFolder) {
+            nodeModulesFolder = path.resolve(this.rootFolder, "node_modules");
+        }
+
         // add each yarn node (and loop through children of children)
         const nodePackages: INodePackage[] = [];
-        inputTrees.forEach((yarnNode: IYarnNode) => this.addNodePackage(yarnNode, nodePackages));
+        inputTrees.forEach((yarnNode: IYarnNode) => this.addNodePackage(nodeModulesFolder, yarnNode, nodePackages));
 
         // return uniq entries
         return Promise.resolve(nodePackages.map((e) => e.path).filter((value, index, array) => {
@@ -52,15 +71,16 @@ export class Yarn {
     /**
      * Add a node package (entry of yarn list) to the given array.
      * Also loop on all children and call ourself back
+     * @param nodeModulesFolder the node_modules location
      * @param yarnNode the node entry to add
      * @param packages the array representing all node dependencies
      */
-    protected addNodePackage(yarnNode: IYarnNode, packages: INodePackage[]): void {
+    protected async addNodePackage(nodeModulesFolder: string, yarnNode: IYarnNode, packages: INodePackage[]): Promise<void> {
 
         // add each child to the array again
         if (yarnNode.children) {
             yarnNode.children.forEach((child) => {
-                this.addNodePackage(child, packages);
+                this.addNodePackage(nodeModulesFolder, child, packages);
             });
         }
 
@@ -68,7 +88,7 @@ export class Yarn {
         const npmModuleName = yarnNode.name.substring(0, yarnNode.name.lastIndexOf("@"));
 
         // build package
-        const nodePackage = { name: npmModuleName, path: path.resolve(this.rootFolder, "node_modules", npmModuleName) };
+        const nodePackage = { name: npmModuleName, path: path.resolve(nodeModulesFolder, npmModuleName) };
 
         // add to the array
         packages.push(nodePackage);
