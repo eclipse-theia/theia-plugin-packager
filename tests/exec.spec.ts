@@ -15,7 +15,7 @@ describe("Test Exec", () => {
 
     test("test exec", async () => {
         const result = await Exec.run("echo 'foo'");
-        expect(result).toBe("foo\n");
+        expect(result).toContain("foo");
     });
 
     test("test exec error", async () => {

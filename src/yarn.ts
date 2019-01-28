@@ -51,7 +51,7 @@ export class Yarn {
         }
 
         // parse array into JSON
-        const unescaped = matchConfig[1].replace(/\\n/g, '').replace(/\\"/g, '"');
+        const unescaped = matchConfig[1].replace(/\\\\/g, '/').replace(/\\n/g, '').replace(/\\"/g, '"');
         const jsonConfig = JSON.parse(unescaped);
         let nodeModulesFolder = jsonConfig.modulesFolder;
         if (!nodeModulesFolder) {
