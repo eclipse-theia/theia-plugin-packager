@@ -11,6 +11,7 @@
 import * as fs from "fs";
 import { Exec } from "../../src/exec";
 import { Yarn } from "../../src/yarn";
+import * as path from "path";
 
 jest.mock("../../src/exec");
 
@@ -52,11 +53,16 @@ describe("Test yarn dependencies", () => {
         expect(dependencyList).toEqual([]);
     });
 
+    async function getNormalizedDependencyList() {
+        return (await yarn.getDependencies())
+            .map(pth => pth.replace("C:", "").split(path.sep).join("/"));
+    }
+
     test("one dependency", async () => {
         const output = fs.readFileSync(__dirname + "/json-list-prod-one-dep.stdout");
         (Exec as any).__setCommandOutput(Yarn.YARN_GET_DEPENDENCIES, output);
         (Exec as any).__setCommandOutput(Yarn.YARN_GET_CONFIG, '{"type":"log","data":"{}"}');
-        const dependencyList = await yarn.getDependencies();
+        const dependencyList = await getNormalizedDependencyList();
         expect(dependencyList).toEqual(["/tmp/node_modules/lodash"]);
     });
 
@@ -67,7 +73,7 @@ describe("Test yarn dependencies", () => {
         const configOutput = fs.readFileSync(__dirname + "/json-config-modules-folder.stdout");
         (Exec as any).__setCommandOutput(Yarn.YARN_GET_CONFIG, configOutput);
 
-        const dependencyList = await yarn.getDependencies();
+        const dependencyList = await getNormalizedDependencyList();
         expect(dependencyList).toEqual(["/node_modules/lodash"]);
     });
 
