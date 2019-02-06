@@ -30,6 +30,8 @@ export class Assembly {
     private dependencies: string[] = [];
     private toZipFiles: string[] = [];
 
+    private readonly validate: Validate;
+
     // default list of ignore pattern
     private ignoreZipPattern = [".git", ".gitignore"];
 
@@ -37,11 +39,11 @@ export class Assembly {
         this.dependencies = [];
         this.toZipFiles = [];
 
-        const validate = new Validate(this.pluginRootFolder);
+        this.validate = new Validate(this.pluginRootFolder);
 
         this.stepsFlow = new StepsFlow(chalk.bold("Packaging of plugin"));
 
-        this.stepsFlow.addStep(new Step("🔍", "Validating", () => validate.check()));
+        this.stepsFlow.addStep(new Step("🔍", "Validating", () => this.validate.check()));
         this.stepsFlow.addStep(new Step("🗂", " Getting dependencies", () => this.getDependencies()));
         this.stepsFlow.addStep(new Step("🗃", " Resolving files", () => this.resolveFiles()));
         this.stepsFlow.addStep(new Step("✂️", " Excluding files", () => this.excludeFiles()));
@@ -106,7 +108,10 @@ export class Assembly {
     }
 
     public async getDependencies(): Promise<boolean> {
-        this.dependencies = (await new Yarn(this.pluginRootFolder).getDependencies());
+
+        // current module name
+        const moduleName = this.validate.pluginPackageJson.name;
+        this.dependencies = (await new Yarn(this.pluginRootFolder, this.pluginRootFolder, [], []).getDependencies(moduleName));
         return Promise.resolve(true);
     }
 

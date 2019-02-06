@@ -19,6 +19,8 @@ import { CliError } from "./cli-error";
  */
 export class Validate {
 
+    public pluginPackageJson: any;
+
     constructor(readonly pluginRootFolder: string) {
 
     }
@@ -30,9 +32,9 @@ export class Validate {
         if (!fs.existsSync(packageJsonPath)) {
             throw new CliError("The plugin is not having any package.json file");
         }
-        const pluginPackageJson: any = require(packageJsonPath);
-        this.validateEngine(pluginPackageJson, packageJsonPath);
-        this.validatePluginEntry(pluginPackageJson, packageJsonPath);
+        this.pluginPackageJson = require(packageJsonPath);
+        this.validateEngine(this.pluginPackageJson, packageJsonPath);
+        this.validatePluginEntry(this.pluginPackageJson, packageJsonPath);
 
         // TODO: check for yarn.lock
 
