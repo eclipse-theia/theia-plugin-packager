@@ -100,7 +100,7 @@ export class Yarn {
      * Allow as well to report error in case of a forbidden dependency found
      * @param children the list of dependencies to analyze
      * @param nodeTreeDependencies the object containing the tree of dependencies
-     * @param subsetDependencies  the
+     * @param subsetDependencies the previous dependencies found. All new dependencies for children will be added on subsetDependencies
      */
     protected findDependencies(children: string[], nodeTreeDependencies: Map<string, string[]>, subsetDependencies: string[]): void {
 
