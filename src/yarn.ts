@@ -136,8 +136,7 @@ export class Yarn {
                 }
                 this.findDependencies(depChildren, nodeTreeDependencies, subsetDependencies);
             }
-        }
-        );
+        });
     }
 
     /**
