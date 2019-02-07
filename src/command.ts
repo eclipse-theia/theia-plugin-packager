@@ -1,5 +1,5 @@
 /*********************************************************************
-* Copyright (c) 2018 Red Hat, Inc.
+* Copyright (c) 2018-2019 Red Hat, Inc.
 *
 * This program and the accompanying materials are made
 * available under the terms of the Eclipse Public License 2.0
@@ -9,23 +9,30 @@
 **********************************************************************/
 
 import * as cp from "child_process";
+import { CliError } from "./cli-error";
 
 /**
  * Allow to run some commands
  * @author Florent Benoit
  */
-export class Exec {
+export class Command {
 
-    public static async run(command: string): Promise<string> {
+    constructor(private readonly directory: string) {
+
+    }
+
+    public async exec(commandLine: string): Promise<string> {
         return new Promise<string>((resolve, reject) => {
-            const execProcess = cp.exec(command, {
+            const execProcess = cp.exec(commandLine, {
+                cwd: this.directory,
+                maxBuffer: 1024 * 1024
             }, (error, stdout, stderr) => {
                 const exitCode = (execProcess as any).exitCode;
                 if (error) {
-                    reject(stderr);
+                    reject(new CliError('Unable to execute the command ' + commandLine + ': ' + error));
                 }
                 if (exitCode !== 0) {
-                    reject("Invalid exit code " + exitCode);
+                    reject(new CliError('Invalid exit code ' + exitCode));
                 }
                 resolve(stdout);
             });

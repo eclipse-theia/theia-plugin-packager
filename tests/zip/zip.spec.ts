@@ -1,12 +1,12 @@
-/*
- * Copyright (c) 2018 Red Hat, Inc.
- * All rights reserved. This program and the accompanying materials are made
- * available under the terms of the Eclipse Public License 2.0
- * which is available at https://www.eclipse.org/legal/epl-2.0/
- *
- * Contributors:
- *   Red Hat, Inc. - initial API and implementation
- */
+/*********************************************************************
+* Copyright (c) 2018-2019 Red Hat, Inc.
+*
+* This program and the accompanying materials are made
+* available under the terms of the Eclipse Public License 2.0
+* which is available at https://www.eclipse.org/legal/epl-2.0/
+*
+* SPDX-License-Identifier: EPL-2.0
+**********************************************************************/
 
 import * as fs from "fs";
 import * as path from "path";
@@ -35,8 +35,10 @@ describe("Test zip", () => {
         const zipExamplePath = path.resolve(rootFolder, "tests/zip/zip-example");
 
         await zip.zipFiles([path.resolve(zipExamplePath, "foo.entry"),
-        path.resolve(zipExamplePath, "foo.entry2"),
-        path.resolve(zipExamplePath, "subfolder/foo.subentry")], tmpZip, zipExamplePath);
+                            path.resolve(zipExamplePath, "foo.entry2"),
+                            path.resolve(zipExamplePath, "subfolder/foo.subentry")],
+                           tmpZip,
+                           zipExamplePath);
 
         let foundFooEntry = false;
         let foundFooEntry2 = false;
@@ -76,7 +78,7 @@ describe("Test zip", () => {
 
         let error = null;
         try {
-        await zip.zipFiles([path.resolve(zipExamplePath, "foo.entry-does-not-exist")], tmpZip, zipExamplePath);
+            await zip.zipFiles([path.resolve(zipExamplePath, "foo.entry-does-not-exist")], tmpZip, zipExamplePath);
         } catch (e) {
             error = e;
         }

@@ -1,21 +1,21 @@
-/*
- * Copyright (c) 2018 Red Hat, Inc.
- * All rights reserved. This program and the accompanying materials are made
- * available under the terms of the Eclipse Public License 2.0
- * which is available at https://www.eclipse.org/legal/epl-2.0/
- *
- * Contributors:
- *   Red Hat, Inc. - initial API and implementation
- */
+/*********************************************************************
+* Copyright (c) 2018-2019 Red Hat, Inc.
+*
+* This program and the accompanying materials are made
+* available under the terms of the Eclipse Public License 2.0
+* which is available at https://www.eclipse.org/legal/epl-2.0/
+*
+* SPDX-License-Identifier: EPL-2.0
+**********************************************************************/
 
 import * as fs from "fs";
 import * as path from "path";
 import * as tmp from "tmp";
 import { Assembly } from "../../src/assembly";
-import { Exec } from "../../src/exec";
+import { Command } from "../../src/command";
 import { Yarn } from "../../src/yarn";
 
-jest.mock("../../src/exec");
+jest.mock("../../src/command");
 jest.unmock("archiver");
 
 describe("Test Assembly", () => {
@@ -47,11 +47,11 @@ describe("Test Assembly", () => {
     test("test assembly", async () => {
 
         const execOutput = '{"type":"tree","data":{"type":"list","trees":[{"name":"dummy@1.1.2"'
-         + ',"children":[],"hint":null,"color":"bold","depth":0}]}}';
-        (Exec as any).__setCommandOutput(Yarn.YARN_GET_DEPENDENCIES, execOutput);
+            + ',"children":[],"hint":null,"color":"bold","depth":0}]}}';
+        (Command as any).__setExecCommandOutput(Yarn.YARN_GET_DEPENDENCIES, execOutput);
 
         const yarnConfigOutput = '{"type":"log","data":"{}"}';
-        (Exec as any).__setCommandOutput(Yarn.YARN_GET_CONFIG, yarnConfigOutput);
+        (Command as any).__setExecCommandOutput(Yarn.YARN_GET_CONFIG, yarnConfigOutput);
 
         const assembly = new Assembly(assemblyExamplePath, tmpZip);
         await assembly.create();
@@ -60,21 +60,21 @@ describe("Test Assembly", () => {
     test("test missing file", async () => {
 
         const execOutput = '{"type":"tree","data":{"type":"list","trees":[{"name":"unknown@1.1.2","children":[],'
-         + '"hint":null,"color":"bold","depth":0}]}}';
-        (Exec as any).__setCommandOutput(Yarn.YARN_GET_DEPENDENCIES, execOutput);
+            + '"hint":null,"color":"bold","depth":0}]}}';
+        (Command as any).__setExecCommandOutput(Yarn.YARN_GET_DEPENDENCIES, execOutput);
 
         const yarnConfigOutput = '{"type":"log","data":"{}"}';
-        (Exec as any).__setCommandOutput(Yarn.YARN_GET_CONFIG, yarnConfigOutput);
+        (Command as any).__setExecCommandOutput(Yarn.YARN_GET_CONFIG, yarnConfigOutput);
 
         const assembly = new Assembly(assemblyExamplePath, tmpZip);
         let error = null;
         try {
-        await assembly.create();
+            await assembly.create();
         } catch (err) {
-        error = err;
+            error = err;
         }
         expect(error).toBeDefined();
-        expect(error.message).toMatch("not available on the filesystem");
+        expect(error.message).toMatch("unknown is referenced but is not available on the filesystem");
     });
 
 });
