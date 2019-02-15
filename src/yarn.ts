@@ -8,6 +8,7 @@
 * SPDX-License-Identifier: EPL-2.0
 **********************************************************************/
 
+import * as fs from 'fs-extra';
 import * as path from 'path';
 import { Command } from './command';
 import { Logger } from './logger';
@@ -29,6 +30,8 @@ export class Yarn {
      * Command to grab yarn configuration.
      */
     public static readonly YARN_GET_CONFIG = 'yarn config current --json';
+
+    public static readonly YARN_GET_WORKSPACES = "yarn workspaces info --json";
 
     constructor(readonly rootFolder: string,
         private readonly dependenciesDirectory: string,
@@ -72,6 +75,42 @@ export class Yarn {
             nodeModulesFolder = path.resolve(this.rootFolder, 'node_modules');
         }
 
+        let workspaceModuleFolder: string | undefined = undefined;
+        // Get yarn workspaces
+        let yarnWorkspacesStdout = undefined;
+        try {
+            yarnWorkspacesStdout = await command.exec(Yarn.YARN_GET_WORKSPACES);
+        } catch (error) {
+            // not in a workspace
+            Logger.debug('No yarn workspace found.');
+        }
+
+        if (yarnWorkspacesStdout) {
+            const matchWorkspaces = /^{"type":"log","data":"(.*)"}$/gm.exec(yarnWorkspacesStdout);
+            if (!matchWorkspaces || matchWorkspaces.length !== 2) {
+                throw new Error("Not able to get yarn workspaces when executing "
+                    + Yarn.YARN_GET_WORKSPACES + ". Found " + yarnWorkspacesStdout);
+            }
+
+            // parse array into JSON
+            const unescapedWorkspaces = matchWorkspaces[1].replace(/\\\\/g, '/').replace(/\\n/g, '').replace(/\\"/g, '"');
+            const jsonWorkspaces = JSON.parse(unescapedWorkspaces);
+            // ok we've a map between workspaces name and their location
+            const currentDir = process.cwd();
+            // search if we've a location matching
+            const matchingElements = Object.keys(jsonWorkspaces).filter(entry => {
+                if (jsonWorkspaces[entry].location) {
+                    if (currentDir.endsWith(jsonWorkspaces[entry].location)) {
+                        return true;
+                    }
+                }
+                return false;
+            }).map(entry => currentDir.substring(0, currentDir.length - jsonWorkspaces[entry].location.length));
+            if (matchingElements.length > 0) {
+                workspaceModuleFolder = path.resolve(matchingElements[0], 'node_modules');
+            }
+        }
+
         // First, populate in a tree all the dependencies found by yarn
         const nodeTreeDependencies = new Map<string, string[]>();
         inputTrees.map(yarnNode => this.insertNode(yarnNode, nodeTreeDependencies));
@@ -87,7 +126,7 @@ export class Yarn {
 
         // OK, now grab folders for each of these dependencies
         const nodePackages: INodePackage[] = [];
-        subsetDependencies.forEach(moduleName => this.addNodePackage(nodeModulesFolder, moduleName, nodePackages));
+        await Promise.all(subsetDependencies.map(moduleName => this.addNodePackage(nodeModulesFolder, moduleName, nodePackages, workspaceModuleFolder)));
 
         // return unique entries
         return Promise.resolve(nodePackages.map((e) => e.path).filter((value, index, array) => {
@@ -171,10 +210,16 @@ export class Yarn {
      * @param yarnNode the node entry to add
      * @param packages the array representing all node dependencies
      */
-    protected async addNodePackage(nodeModulesFolder: string, moduleName: string, packages: INodePackage[]): Promise<void> {
+    protected async addNodePackage(nodeModulesFolder: string, moduleName: string, packages: INodePackage[], workspaceModuleFolder: string | undefined): Promise<void> {
+
+        let modulePath = path.resolve(nodeModulesFolder, moduleName);
+        const availabeOnDisk = await fs.pathExists(modulePath);
+        if (workspaceModuleFolder && !availabeOnDisk) {
+            modulePath = path.resolve(workspaceModuleFolder, moduleName);
+        }
 
         // build package
-        const nodePackage = { name: moduleName, path: path.resolve(nodeModulesFolder, moduleName) };
+        const nodePackage = { name: moduleName, path: modulePath };
 
         // add to the array
         packages.push(nodePackage);

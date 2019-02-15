@@ -9,6 +9,7 @@
 **********************************************************************/
 
 import * as fs from "fs";
+import * as path from "path";
 import { Command } from "../../src/command";
 import { Yarn } from "../../src/yarn";
 
@@ -25,6 +26,7 @@ describe("Test yarn dependencies", () => {
     test("invalid output", async () => {
         (Command as any).__setExecCommandOutput(Yarn.YARN_GET_DEPENDENCIES, "error");
         (Command as any).__setExecCommandOutput(Yarn.YARN_GET_CONFIG, '{"type":"log","data":"{}"}');
+        (Command as any).__setExecCommandOutput(Yarn.YARN_GET_WORKSPACES, '{"type":"log","data":"{}"}');
         try {
             await yarn.getDependencies('foo');
         } catch (e) {
@@ -36,6 +38,7 @@ describe("Test yarn dependencies", () => {
         const output = fs.readFileSync(__dirname + "/json-list-prod-no-dep.stdout");
         (Command as any).__setExecCommandOutput(Yarn.YARN_GET_DEPENDENCIES, output);
         (Command as any).__setExecCommandOutput(Yarn.YARN_GET_CONFIG, 'error');
+        (Command as any).__setExecCommandOutput(Yarn.YARN_GET_WORKSPACES, '{"type":"log","data":"{}"}');
         try {
             await yarn.getDependencies('foo');
         } catch (e) {
@@ -47,6 +50,7 @@ describe("Test yarn dependencies", () => {
         const output = fs.readFileSync(__dirname + "/json-list-prod-no-dep.stdout");
         (Command as any).__setExecCommandOutput(Yarn.YARN_GET_DEPENDENCIES, output);
         (Command as any).__setExecCommandOutput(Yarn.YARN_GET_CONFIG, '{"type":"log","data":"{}"}');
+        (Command as any).__setExecCommandOutput(Yarn.YARN_GET_WORKSPACES, '{"type":"log","data":"{}"}');
         try {
             await yarn.getDependencies('');
         } catch (e) {
@@ -58,6 +62,7 @@ describe("Test yarn dependencies", () => {
         const output = fs.readFileSync(__dirname + "/json-list-prod-one-dep.stdout");
         (Command as any).__setExecCommandOutput(Yarn.YARN_GET_DEPENDENCIES, output);
         (Command as any).__setExecCommandOutput(Yarn.YARN_GET_CONFIG, '{"type":"log","data":"{}"}');
+        (Command as any).__setExecCommandOutput(Yarn.YARN_GET_WORKSPACES, '{"type":"log","data":"{}"}');
         const dependencyList = await yarn.getDependencies('lodash');
         expect(dependencyList).toEqual(["/tmp/node_modules/depd"]);
     });
@@ -66,6 +71,7 @@ describe("Test yarn dependencies", () => {
         const output = fs.readFileSync(__dirname + "/json-list-prod-one-dep-duplicate.stdout");
         (Command as any).__setExecCommandOutput(Yarn.YARN_GET_DEPENDENCIES, output);
         (Command as any).__setExecCommandOutput(Yarn.YARN_GET_CONFIG, '{"type":"log","data":"{}"}');
+        (Command as any).__setExecCommandOutput(Yarn.YARN_GET_WORKSPACES, '{"type":"log","data":"{}"}');
         const dependencyList = await yarn.getDependencies('lodash');
         expect(dependencyList).toEqual(["/tmp/node_modules/depd"]);
     });
@@ -75,6 +81,7 @@ describe("Test yarn dependencies", () => {
         const output = fs.readFileSync(__dirname + "/json-list-prod-webpack.stdout");
         (Command as any).__setExecCommandOutput(Yarn.YARN_GET_DEPENDENCIES, output);
         (Command as any).__setExecCommandOutput(Yarn.YARN_GET_CONFIG, '{"type":"log","data":"{}"}');
+        (Command as any).__setExecCommandOutput(Yarn.YARN_GET_WORKSPACES, '{"type":"log","data":"{}"}');
         const dependencyList = await customYarn.getDependencies('webpack');
         expect(dependencyList.length).toEqual(309);
     });
@@ -84,6 +91,7 @@ describe("Test yarn dependencies", () => {
         const output = fs.readFileSync(__dirname + "/json-list-prod-excluded.stdout");
         (Command as any).__setExecCommandOutput(Yarn.YARN_GET_DEPENDENCIES, output);
         (Command as any).__setExecCommandOutput(Yarn.YARN_GET_CONFIG, '{"type":"log","data":"{}"}');
+        (Command as any).__setExecCommandOutput(Yarn.YARN_GET_WORKSPACES, '{"type":"log","data":"{}"}');
         const dependencyList = await customYarn.getDependencies('react');
         expect(dependencyList).toEqual(["/tmp/node_modules/loose-envify", "/tmp/node_modules/js-tokens"]);
     });
@@ -93,6 +101,7 @@ describe("Test yarn dependencies", () => {
         const output = fs.readFileSync(__dirname + "/json-list-prod-excluded.stdout");
         (Command as any).__setExecCommandOutput(Yarn.YARN_GET_DEPENDENCIES, output);
         (Command as any).__setExecCommandOutput(Yarn.YARN_GET_CONFIG, '{"type":"log","data":"{}"}');
+        (Command as any).__setExecCommandOutput(Yarn.YARN_GET_WORKSPACES, '{"type":"log","data":"{}"}');
         const dependencyList = await customYarn.getDependencies('react');
         expect(dependencyList).toEqual(["/tmp/node_modules/loose-envify"]);
     });
@@ -102,6 +111,7 @@ describe("Test yarn dependencies", () => {
         const output = fs.readFileSync(__dirname + "/json-list-prod-excluded.stdout");
         (Command as any).__setExecCommandOutput(Yarn.YARN_GET_DEPENDENCIES, output);
         (Command as any).__setExecCommandOutput(Yarn.YARN_GET_CONFIG, '{"type":"log","data":"{}"}');
+        (Command as any).__setExecCommandOutput(Yarn.YARN_GET_WORKSPACES, '{"type":"log","data":"{}"}');
         try {
             await customYarn.getDependencies('react');
         } catch (e) {
@@ -115,6 +125,7 @@ describe("Test yarn dependencies", () => {
 
         const configOutput = fs.readFileSync(__dirname + "/json-config-modules-folder.stdout");
         (Command as any).__setExecCommandOutput(Yarn.YARN_GET_CONFIG, configOutput);
+        (Command as any).__setExecCommandOutput(Yarn.YARN_GET_WORKSPACES, '{"type":"log","data":"{}"}');
 
         const dependencyList = await yarn.getDependencies('lodash');
         expect(dependencyList).toEqual(["/node_modules/depd"]);
@@ -124,7 +135,57 @@ describe("Test yarn dependencies", () => {
         const output = fs.readFileSync(__dirname + "/json-list-prod-one-dep-children.stdout");
         (Command as any).__setExecCommandOutput(Yarn.YARN_GET_DEPENDENCIES, output);
         (Command as any).__setExecCommandOutput(Yarn.YARN_GET_CONFIG, '{"type":"log","data":"{}"}');
+        (Command as any).__setExecCommandOutput(Yarn.YARN_GET_WORKSPACES, '{"type":"log","data":"{}"}');
         const dependencyList = await yarn.getDependencies('http-errors');
         expect(dependencyList.length).toBe(4);
     });
+
+
+    test("no workspaces", async () => {
+        const output = fs.readFileSync(__dirname + "/json-list-prod-no-dep.stdout");
+        (Command as any).__setExecCommandOutput(Yarn.YARN_GET_DEPENDENCIES, output);
+        (Command as any).__setExecCommandOutput(Yarn.YARN_GET_CONFIG, '{"type":"log","data":"{}"}');
+        (Command as any).__setExecError(Yarn.YARN_GET_WORKSPACES, 'Invalid exit code');
+
+        await yarn.getDependencies('');
+    });
+
+
+    test("no workspaces", async () => {
+        const output = fs.readFileSync(__dirname + "/json-list-prod-no-dep.stdout");
+        (Command as any).__setExecCommandOutput(Yarn.YARN_GET_DEPENDENCIES, output);
+        (Command as any).__setExecCommandOutput(Yarn.YARN_GET_CONFIG, '{"type":"log","data":"{}"}');
+        (Command as any).__setExecError(Yarn.YARN_GET_WORKSPACES, 'Invalid exit code');
+
+        await yarn.getDependencies('');
+    });
+
+
+    test("invalid yarn workspaceoutput", async () => {
+        const output = fs.readFileSync(__dirname + "/json-list-prod-one-dep.stdout");
+        (Command as any).__setExecCommandOutput(Yarn.YARN_GET_DEPENDENCIES, output);
+        (Command as any).__setExecCommandOutput(Yarn.YARN_GET_CONFIG, '{"type":"log","data":"{}"}');
+        (Command as any).__setExecCommandOutput(Yarn.YARN_GET_WORKSPACES, 'error');
+        try {
+            await yarn.getDependencies('foo');
+        } catch (e) {
+            expect(e.toString()).toMatch(/Not able to get yarn workspaces.*$/);
+        }
+    });
+
+    test("one dependency with children", async () => {
+        const output = fs.readFileSync(__dirname + "/json-list-prod-one-dep-children.stdout");
+        (Command as any).__setExecCommandOutput(Yarn.YARN_GET_DEPENDENCIES, output);
+        (Command as any).__setExecCommandOutput(Yarn.YARN_GET_CONFIG, '{"type":"log","data":"{}"}');
+        let workspaceOutput = fs.readFileSync(__dirname + "/json-workspaces-info.stdout").toString();
+
+        const currentDir = process.cwd();
+        const parentDir = path.resolve(path.dirname(currentDir));
+        const moduleDir = path.basename(currentDir);
+        workspaceOutput = workspaceOutput.replace("PARENT_DIR", parentDir).replace("MODULE_DIR", moduleDir);
+        (Command as any).__setExecCommandOutput(Yarn.YARN_GET_WORKSPACES, workspaceOutput);
+        const dependencyList = await yarn.getDependencies('http-errors');
+        expect(dependencyList.length).toBe(4);
+    });
+
 });
