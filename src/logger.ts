@@ -14,9 +14,13 @@
  */
 export class Logger {
 
+    public static DEBUG_ENABLED = false;
+
     /* tslint:disable:no-console */
     public static debug(...args: any[]): void {
-        console.log.apply(console, args);
+        if (this.DEBUG_ENABLED) {
+            console.debug.apply(console, args);
+        }
     }
 
     public static info(...args: any[]): void {

@@ -18,9 +18,19 @@ export class Command {
      */
     private static readonly execMap: Map<string, string> = new Map();
 
+    /**
+     * Map between the name of the exec command and the error output.
+     */
+    private static readonly errorMap: Map<string, string> = new Map();
+
     // mock any exec command by providing the output
     public static __setExecCommandOutput(command: string, output: string): void {
         Command.execMap.set(command, output);
+    }
+
+    // mock any exec command by providing the output
+    public static __setExecError(command: string, error: string): void {
+        Command.errorMap.set(command, error);
     }
 
     constructor() {
@@ -28,6 +38,12 @@ export class Command {
     }
 
     public async exec(command: string): Promise<string> {
+        const error = Command.errorMap.get(command);
+        if (error) {
+            Command.errorMap.delete(command);
+            throw new Error(error);
+        }
+
         const result = Command.execMap.get(command);
         if (result) {
             return Promise.resolve(result);

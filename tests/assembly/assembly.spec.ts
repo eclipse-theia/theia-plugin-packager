@@ -52,6 +52,7 @@ describe("Test Assembly", () => {
 
         const yarnConfigOutput = '{"type":"log","data":"{}"}';
         (Command as any).__setExecCommandOutput(Yarn.YARN_GET_CONFIG, yarnConfigOutput);
+        (Command as any).__setExecCommandOutput(Yarn.YARN_GET_WORKSPACES, '{"type":"log","data":"{}"}');
 
         const assembly = new Assembly(assemblyExamplePath, tmpZip);
         await assembly.create();
@@ -65,6 +66,7 @@ describe("Test Assembly", () => {
 
         const yarnConfigOutput = '{"type":"log","data":"{}"}';
         (Command as any).__setExecCommandOutput(Yarn.YARN_GET_CONFIG, yarnConfigOutput);
+        (Command as any).__setExecCommandOutput(Yarn.YARN_GET_WORKSPACES, '{"type":"log","data":"{}"}');
 
         const assembly = new Assembly(assemblyExamplePath, tmpZip);
         let error = null;
