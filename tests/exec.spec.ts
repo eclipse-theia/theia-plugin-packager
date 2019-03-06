@@ -8,8 +8,7 @@
 * SPDX-License-Identifier: EPL-2.0
 **********************************************************************/
 
-import * as fs from "fs";
-import { Command } from "../src/command";
+import {Command} from "../src/command";
 
 describe("Test Command", () => {
 
