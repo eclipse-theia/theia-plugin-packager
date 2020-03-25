@@ -5,7 +5,6 @@
   "author": "Florent Benoit",
   "license": "EPL-2.0",
   "bin": {
-    "theia:plugin": "./dist/index.js",
     "theia-plugin": "./dist/index.js"
   },
   "dependencies": {
