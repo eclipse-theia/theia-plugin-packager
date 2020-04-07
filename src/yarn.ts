@@ -31,7 +31,7 @@ export class Yarn {
      */
     public static readonly YARN_GET_CONFIG = 'yarn config current --json';
 
-    public static readonly YARN_GET_WORKSPACES = "yarn workspaces info --json";
+    public static readonly YARN_GET_WORKSPACES = "yarn workspaces --json info";
 
     constructor(readonly rootFolder: string,
         private readonly dependenciesDirectory: string,
