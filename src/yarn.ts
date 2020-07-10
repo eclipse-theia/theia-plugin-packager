@@ -99,7 +99,8 @@ export class Yarn {
             // search if we've a location matching
             const matchingElements = Object.keys(jsonWorkspaces).filter(entry => {
                 if (jsonWorkspaces[entry].location) {
-                    if (currentDir.endsWith(jsonWorkspaces[entry].location)) {
+                    // 'yarn workspaces info' always returns paths separated by forward slash. Convert to local OS separator to compare with cwd.
+                    if (currentDir.endsWith(jsonWorkspaces[entry].location.replace(/\//g, path.sep))) {
                         return true;
                     }
                 }
